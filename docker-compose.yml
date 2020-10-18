@@ -1,0 +1,51 @@
+version: '3'
+services:
+
+  config:
+    image: "mongo:${MONGO_VERSION}"
+    command: mongod --port 27017 --configsvr --replSet config --oplogSize 16 --dbpath /data/db --bind_ip_all
+    ports:
+      - "27035:27017"
+    volumes:
+      - ./data/config:/data/db
+      - ./scripts:/scripts
+
+  shardA:
+    image: "mongo:${MONGO_VERSION}"
+    command: mongod --port 27017 --shardsvr --replSet shardA --oplogSize 16 --dbpath /data/db --bind_ip_all
+    ports:
+      - "27018:27017"
+    volumes:
+      - ./data/shardA:/data/db
+      - ./scripts:/scripts
+
+  shardB:
+    image: "mongo:${MONGO_VERSION}"
+    command: mongod --port 27017 --shardsvr --replSet shardB --oplogSize 16 --dbpath /data/db --bind_ip_all
+    ports:
+      - "27019:27017"
+    volumes:
+      - ./data/shardB:/data/db
+      - ./scripts:/scripts
+
+  shardC:
+    image: "mongo:${MONGO_VERSION}"
+    command: mongod --port 27017 --shardsvr --replSet shardC --oplogSize 16 --dbpath /data/db --bind_ip_all
+    ports:
+      - "27020:27017"
+    volumes:
+      - ./data/shardC:/data/db
+      - ./scripts:/scripts
+
+  router:
+    image: "mongo:${MONGO_VERSION}"
+    command: mongos --port 27017 --configdb config/config:27017 --bind_ip_all
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./scripts:/scripts
+    depends_on:
+      - config
+      - shardA
+      - shardB
+      - shardC

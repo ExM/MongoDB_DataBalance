@@ -1,0 +1,1 @@
+rs.initiate({ _id: 'shardA', members: [ { _id: 0, host : 'shardA:27017' } ]})
