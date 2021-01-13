@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "Fill": {
+      "commandName": "Project",
+      "commandLineArgs": "fill"
+    },
+    "Update": {
+      "commandName": "Project",
+      "commandLineArgs": "update"
+    }
+  }
+}

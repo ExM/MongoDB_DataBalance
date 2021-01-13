@@ -1,1 +1,4 @@
 /data
+/Examples/.idea
+**/bin/
+**/obj/
