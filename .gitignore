@@ -2,3 +2,4 @@
 /Examples/.idea
 **/bin/
 **/obj/
+/commandPlan_*.js

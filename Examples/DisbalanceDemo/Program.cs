@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
+using MongoDB.Driver.Core.Misc;
 
 namespace DisbalanceDemo
 {
@@ -12,58 +13,64 @@ namespace DisbalanceDemo
 	{
 		static async Task<int> Main(string[] args)
 		{
-			if (args.Length != 1)
+			if (args.Length != 4)
 				return -1;
 
+			var collectionName = args[0];
+			var projectIdMin = int.Parse(args[1]);
+			var projectIdMax = int.Parse(args[2]);
+			var batchCount = int.Parse(args[3]);
+
 			var client = new MongoClient("mongodb://localhost/admin");
-			var database = client.GetDatabase("disbalace_demo");
-			var coll = database.GetCollection<Job>("jobs");
+			var database = client.GetDatabase("disbalance");
+			var coll = database.GetCollection<Job>(collectionName);
 
-			switch (args[0])
-			{
-				case "fill":
-					await Fill(coll);
-					break;
-
-				case "update":
-					await Update(coll);
-					break;
-			}
-
-			return 0;
-		}
-
-		private static async Task Fill(IMongoCollection<Job> coll)
-		{
 			await coll.Indexes.CreateOneAsync(
 				new CreateIndexModel<Job>(Builders<Job>.IndexKeys.Ascending(_ => _.ProjectId),
 					new CreateIndexOptions() {Name = "projectId_1", Background = true}));
 
-			var jobCount = 100;
-			var jobs = new List<Job>(jobCount);
 
-			for (var i = 0; i < jobCount; i++)
-			{
-				jobs.Add(new Job(){ ProjectId = i });
-			}
 
-			await coll.InsertManyAsync(jobs);
+			await Fill(coll, projectIdMin, projectIdMax, batchCount);
+
+			return 0;
 		}
 
-		private static async Task Update(IMongoCollection<Job> coll)
+		private static async Task Fill(IMongoCollection<Job> coll, int projectIdMin, int projectIdMax, int batchCount)
 		{
-			var tasks = Enumerable.Range(0, 50).Select(i => UpdateJob(coll, i)).ToArray();
+			var payloadBuffer = new byte[256];
 
-			await Task.WhenAll(tasks);
+			for (var d = 0; d < batchCount; d++)
+			{
+				var jobCount = 1000;
+				var jobs = new List<Job>(jobCount);
+
+				for (var i = 0; i < jobCount; i++)
+				{
+					_rnd.NextBytes(payloadBuffer);
+
+					jobs.Add(new Job()
+					{
+						Created = DateTime.UtcNow,
+						Name = randomString(_rnd.Next(8, 32)),
+						ProjectId = _rnd.Next(projectIdMin, projectIdMax),
+						Payload = payloadBuffer
+					});
+				}
+
+				await coll.InsertManyAsync(jobs);
+
+				Console.WriteLine($"insert {d} batch");
+			}
 		}
 
-		private static async Task UpdateJob(IMongoCollection<Job> coll, int projectId)
+		private static Random _rnd = new Random();
+
+		private static string randomString(int length)
 		{
-			while (true)
-			{
-				await coll.UpdateOneAsync(_ => _.ProjectId == projectId, Builders<Job>.Update.Inc(_ => _.Revision, 1));
-				await Task.Delay(1);
-			}
+			const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+			return new string(Enumerable.Repeat(chars, length)
+				.Select(s => s[_rnd.Next(s.Length)]).ToArray());
 		}
 	}
 
@@ -75,10 +82,13 @@ namespace DisbalanceDemo
 		[BsonElement("projectId"), BsonRequired]
 		public int ProjectId { get; set; }
 
-		[BsonElement("rev"), BsonRequired]
-		public int Revision { get; set; }
+		[BsonElement("created"), BsonRequired]
+		public DateTime Created { get; set; }
 
-		//[BsonElement("payload"), BsonRequired]
-		//public byte[] Payload { get; set; }
+		[BsonElement("name"), BsonRequired]
+		public string Name { get; set; }
+
+		[BsonElement("payload"), BsonRequired]
+		public byte[] Payload { get; set; }
 	}
 }

@@ -1,12 +1,16 @@
 {
   "profiles": {
-    "Fill": {
+    "Fill 1-1000  projects": {
       "commandName": "Project",
-      "commandLineArgs": "fill"
+      "commandLineArgs": "jobs 1 1000 5000"
     },
-    "Update": {
+    "Fill 1-500 projects": {
       "commandName": "Project",
-      "commandLineArgs": "update"
+      "commandLineArgs": "jobs 1 500 5000"
+    },
+    "Fill 1-10 projects": {
+      "commandName": "Project",
+      "commandLineArgs": "jobs 1 10 5000"
     }
   }
 }

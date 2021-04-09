@@ -1,0 +1,8 @@
+<Configuration>
+	<Connection Servers="localhost" />
+
+	<Defaults zones="shardA,shardB,shardC" />
+
+	<Interval nameSpace="disbalace_demo.jobs" />
+
+</Configuration>
