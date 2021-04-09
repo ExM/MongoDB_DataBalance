@@ -34,6 +34,13 @@ ProjectId will be in the range from 12 to 34
 
 567 batches of 1000 elements will be recorded
 
+# Enable sharding
+
+```shell
+sh.enableSharding("disbalance");
+sh.shardCollection( "disbalance.myjobs", { "projectId": 1 } );
+```
+
 # Configuration of ShardEqualizer
 
 Initialize
