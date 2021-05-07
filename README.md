@@ -20,7 +20,6 @@ dotnet tool restore
 
 Build
 ```shell
-dotnet restore .\Examples\DisbalanceDemo.sln
 dotnet build .\Examples\DisbalanceDemo.sln
 ```
 

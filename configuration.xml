@@ -3,6 +3,6 @@
 
 	<Defaults zones="shardA,shardB,shardC" />
 
-	<Interval nameSpace="disbalace_demo.jobs" />
+	<Interval nameSpace="disbalance.jobs" />
 
 </Configuration>
